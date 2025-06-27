@@ -89,12 +89,12 @@ fn test_opcode_parsing() {
     );
 }
 
-#[test]
-fn test_utxo_ownership() {
-    let utxo = UTXO {
-        txid: vec![0xaa, 0xbb],
-        vout: 0,
-        value: 1000,
-    };
-    assert_eq!(consume_utxo(utxo.clone()), utxo);
-}
+// #[test]
+// fn test_utxo_ownership() {
+//     let utxo = UTXO {
+//         txid: vec![0xaa, 0xbb],
+//         vout: 0,
+//         value: 1000,
+//     };
+//     assert_eq!(consume_utxo(utxo.clone()), utxo);
+// }

@@ -1,4 +1,5 @@
 use hex::{decode, encode};
+#[allow(unused_imports)]
 
 pub fn decode_hex(hex_str: &str) -> Result<Vec<u8>, String> {
     // Ensure even number of characters
