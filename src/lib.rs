@@ -9,8 +9,10 @@ pub fn decode_hex(hex_str: &str) -> Result<Vec<u8>, String> {
     // Try parsing each byte
     (0..hex_str.len())
         .step_by(2)
-        .map(|i| u8::from_str_radix(&hex_str[i..i + 2], 16)
-             .map_err(|e| format!("Invalid hex character at position {}: {}", i, e)))
+        .map(|i| {
+            u8::from_str_radix(&hex_str[i..i + 2], 16)
+                .map_err(|e| format!("Invalid hex character at position {}: {}", i, e))
+        })
         .collect()
 }
 
@@ -20,11 +22,9 @@ pub fn to_big_endian(bytes: &[u8]) -> Vec<u8> {
     reversed
 }
 
-
 pub fn bytes_to_hex(bytes: &[u8]) -> String {
     hex::encode(bytes)
 }
-
 
 pub fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, hex::FromHexError> {
     hex::decode(hex)
@@ -34,7 +34,9 @@ pub fn swap_endian_u32(num: u32) -> [u8; 4] {
     num.to_le_bytes()
 }
 pub fn parse_satoshis(input: &str) -> Result<u64, String> {
-    input.trim().parse::<u64>()
+    input
+        .trim()
+        .parse::<u64>()
         .map_err(|e| format!("Invalid satoshis value '{}': {}", input, e))
 }
 
@@ -64,15 +66,17 @@ pub fn classify_script(script: &[u8]) -> ScriptType {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Outpoint(pub String, pub u32);
-// Convenience getters 
+// Convenience getters
 impl Outpoint {
-    pub fn txid(&self) -> &str { &self.0 }
-    pub fn vout(&self) -> u32  { self.1 }
+    pub fn txid(&self) -> &str {
+        &self.0
+    }
+    pub fn vout(&self) -> u32 {
+        self.1
+    }
 }
-
 
 pub fn read_pushdata(script: &[u8]) -> &[u8] {
     // Assumes OP_PUSHDATA starts at index 2
@@ -130,6 +134,3 @@ pub struct UTXO {
 pub fn consume_utxo(utxo: UTXO) -> UTXO {
     utxo
 }
-
-
-
