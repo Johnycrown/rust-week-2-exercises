@@ -22,7 +22,7 @@ pub fn to_big_endian(bytes: &[u8]) -> Vec<u8> {
 
 
 pub fn bytes_to_hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{:02x}", b)).collect()
+    hex::encode(bytes)
 }
 
 
@@ -34,9 +34,11 @@ pub fn swap_endian_u32(num: u32) -> [u8; 4] {
     num.to_le_bytes()
 }
 pub fn parse_satoshis(input: &str) -> Result<u64, String> {
-    // TODO: Parse input string to u64, return error string if invalid
+    input.trim().parse::<u64>()
+        .map_err(|e| format!("Invalid satoshis value '{}': {}", input, e))
 }
 
+#[derive(Debug, PartialEq)]
 pub enum ScriptType {
     P2PKH,
     P2WPKH,
@@ -44,14 +46,37 @@ pub enum ScriptType {
 }
 
 pub fn classify_script(script: &[u8]) -> ScriptType {
-    // TODO: Match script pattern and return corresponding ScriptType
+    // P2PKH: OP_DUP OP_HASH160 <20-byte pubkey hash> OP_EQUALVERIFY OP_CHECKSIG
+    if script.len() == 25
+        && script[0] == 0x76
+        && script[1] == 0xa9
+        && script[2] == 0x14
+        && script[23] == 0x88
+        && script[24] == 0xac
+    {
+        ScriptType::P2PKH
+    }
+    // P2WPKH: 0x00 <20-byte pubkey hash>
+    else if script.len() == 22 && script[0] == 0x00 && script[1] == 0x14 {
+        ScriptType::P2WPKH
+    } else {
+        ScriptType::Unknown
+    }
 }
 
-// TODO: complete Outpoint tuple struct
-pub struct Outpoint();
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Outpoint(pub String, pub u32);
+// Convenience getters 
+impl Outpoint {
+    pub fn txid(&self) -> &str { &self.0 }
+    pub fn vout(&self) -> u32  { self.1 }
+}
+
 
 pub fn read_pushdata(script: &[u8]) -> &[u8] {
-    // TODO: Return the pushdata portion of the script slice (assumes pushdata starts at index 2)
+    // Assumes OP_PUSHDATA starts at index 2
+    &script[2..]
 }
 
 pub trait Wallet {
@@ -64,19 +89,20 @@ pub struct TestWallet {
 
 impl Wallet for TestWallet {
     fn balance(&self) -> u64 {
-        // TODO: Return the wallet's confirmed balance
+        self.confirmed
     }
 }
 
 pub fn apply_fee(balance: &mut u64, fee: u64) {
-    // TODO: Subtract fee from mutable balance reference
+    *balance = balance.saturating_sub(fee);
 }
 
 pub fn move_txid(txid: String) -> String {
-    // TODO: Return formatted string including the txid for display or logging
+    format!("Moved txid: {}", txid)
 }
 
-// TODO: Add necessary derive traits
+// Add necessary derive traits
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Opcode {
     OpChecksig,
     OpDup,
@@ -85,17 +111,25 @@ pub enum Opcode {
 
 impl Opcode {
     pub fn from_byte(byte: u8) -> Result<Self, String> {
-        // TODO: Implement mapping from byte to Opcode variant
+        match byte {
+            0xac => Ok(Opcode::OpChecksig),
+            0x76 => Ok(Opcode::OpDup),
+            _ => Err(format!("Unknown opcode: 0x{:x}", byte)),
+        }
     }
 }
 
-// TODO: Add necessary derive traits
+// Add necessary derive traits
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UTXO {
-    pub txid: Vec<u8>,
+    pub txid: String,   // match the Outpoint / test type
     pub vout: u32,
     pub value: u64,
 }
 
 pub fn consume_utxo(utxo: UTXO) -> UTXO {
-    // TODO: Implement UTXO consumption logic (if any)
+    utxo
 }
+
+
+
