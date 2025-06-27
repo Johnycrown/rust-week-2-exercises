@@ -120,9 +120,9 @@ impl Opcode {
 }
 
 // Add necessary derive traits
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct UTXO {
-    pub txid: String,   // match the Outpoint / test type
+    pub txid: Vec<u8>,
     pub vout: u32,
     pub value: u64,
 }
